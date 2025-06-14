@@ -25,7 +25,16 @@ export default function BookManager() {
 		updateBookNotes,
 		addBookLink,
 		removeBookLink,
+		isLoading,
 	} = useBookManager();
+
+	if (isLoading) {
+		return (
+			<div className="flex items-center justify-center p-8">
+				<div className="text-muted-foreground">読み込み中...</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-6">

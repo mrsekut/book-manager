@@ -14,7 +14,8 @@ import {
 	moveBookWithKeyboard,
 	toggleExpandState,
 } from "@/features/books/bookLogic";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { db } from "@/lib/database";
 
 export function useBookManager() {
 	const [books, setBooks] = useAtom(booksAtom);
@@ -23,44 +24,75 @@ export function useBookManager() {
 	const [activeTab, setActiveTab] = useAtom(activeTabAtom);
 	const [newBookTitle, setNewBookTitle] = useAtom(newBookTitleAtom);
 	const [highPriorityBooks] = useAtom(highPriorityBooksAtom);
+	const [isLoading, setIsLoading] = useState(true);
 
-	// ローカルストレージからデータを読み込む
-	useEffect(() => {
-		const savedBooks = localStorage.getItem("books");
-		if (savedBooks) {
-			setBooks(JSON.parse(savedBooks));
+	// Supabaseからデータを読み込む
+	const loadBooks = useCallback(async () => {
+		try {
+			setIsLoading(true);
+			const fetchedBooks = await db.getAllBooks();
+			setBooks(fetchedBooks);
+		} catch (error) {
+			console.error('Failed to load books:', error);
+		} finally {
+			setIsLoading(false);
 		}
-		// eslint-disable-next-line
+	}, [setBooks]);
+
+	useEffect(() => {
+		loadBooks();
+	}, [loadBooks]);
+
+	// データをSupabaseに保存する関数
+	const saveBooks = useCallback(async (updatedBooks: typeof books) => {
+		try {
+			await db.updateAllBooks(updatedBooks);
+		} catch (error) {
+			console.error('Failed to save books:', error);
+		}
 	}, []);
 
-	// データをローカルストレージに保存
-	useEffect(() => {
-		localStorage.setItem("books", JSON.stringify(books));
-	}, [books]);
-
 	// 本を追加
-	const addBook = () => {
+	const addBook = async () => {
 		const result = addBookToList(books, newBookTitle);
 		if (result.newBookId) {
-			setBooks(result.books);
-			setNewBookTitle("");
-			setSelectedBookId(result.newBookId);
+			const newBook = result.books.find(book => book.id === result.newBookId);
+			if (newBook) {
+				try {
+					const createdBook = await db.createBook(newBook);
+					if (createdBook) {
+						setBooks(result.books);
+						setNewBookTitle("");
+						setSelectedBookId(result.newBookId);
+					}
+				} catch (error) {
+					console.error('Failed to create book:', error);
+				}
+			}
 		}
 	};
 
 	// 本を削除
-	const deleteBook = (id: string) => {
-		const updatedBooks = deleteBookFromList(books, id);
-		setBooks(updatedBooks);
-		if (selectedBookId === id) {
-			setSelectedBookId(null);
+	const deleteBook = async (id: string) => {
+		try {
+			const success = await db.deleteBook(id);
+			if (success) {
+				const updatedBooks = deleteBookFromList(books, id);
+				setBooks(updatedBooks);
+				if (selectedBookId === id) {
+					setSelectedBookId(null);
+				}
+			}
+		} catch (error) {
+			console.error('Failed to delete book:', error);
 		}
 	};
 
 	// 優先順位を変更
-	const togglePriority = (id: string) => {
+	const togglePriority = async (id: string) => {
 		const updatedBooks = toggleBookPriority(books, id);
 		setBooks(updatedBooks);
+		await saveBooks(updatedBooks);
 	};
 
 	// 本の展開状態を切り替え
@@ -70,7 +102,7 @@ export function useBookManager() {
 	};
 
 	// キーボードショートカット処理
-	const handleKeyDown = (
+	const handleKeyDown = async (
 		e: React.KeyboardEvent<HTMLDivElement>,
 		bookId: string
 	) => {
@@ -96,6 +128,7 @@ export function useBookManager() {
 			if (direction) {
 				const updatedBooks = moveBookWithKeyboard(books, bookId, direction);
 				setBooks(updatedBooks);
+				await saveBooks(updatedBooks);
 			}
 		}
 	};
@@ -106,25 +139,40 @@ export function useBookManager() {
 	};
 
 	// 本のメモを更新
-	const updateBookNotes = (id: string, notes: string) => {
+	const updateBookNotes = async (id: string, notes: string) => {
 		const updatedBooks = books.map((book) =>
 			book.id === id ? { ...book, notes } : book
 		);
 		setBooks(updatedBooks);
+		
+		try {
+			await db.updateBook(id, { notes });
+		} catch (error) {
+			console.error('Failed to update book notes:', error);
+		}
 	};
 
 	// 本にリンクを追加
-	const addBookLink = (id: string, link: string) => {
+	const addBookLink = async (id: string, link: string) => {
 		const updatedBooks = books.map((book) =>
 			book.id === id
 				? { ...book, links: [...(book.links || []), link] }
 				: book
 		);
 		setBooks(updatedBooks);
+
+		try {
+			const book = books.find(b => b.id === id);
+			if (book) {
+				await db.updateBook(id, { links: [...(book.links || []), link] });
+			}
+		} catch (error) {
+			console.error('Failed to add book link:', error);
+		}
 	};
 
 	// 本のリンクを削除
-	const removeBookLink = (id: string, linkIndex: number) => {
+	const removeBookLink = async (id: string, linkIndex: number) => {
 		const updatedBooks = books.map((book) =>
 			book.id === id
 				? {
@@ -134,6 +182,16 @@ export function useBookManager() {
 				: book
 		);
 		setBooks(updatedBooks);
+
+		try {
+			const book = books.find(b => b.id === id);
+			if (book) {
+				const newLinks = book.links?.filter((_, index) => index !== linkIndex) || [];
+				await db.updateBook(id, { links: newLinks });
+			}
+		} catch (error) {
+			console.error('Failed to remove book link:', error);
+		}
 	};
 
 	return {
@@ -157,5 +215,6 @@ export function useBookManager() {
 		updateBookNotes,
 		addBookLink,
 		removeBookLink,
+		isLoading,
 	};
 }
