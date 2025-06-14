@@ -1,12 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Button } from "@/components/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/popover";
 import {
 	Command,
 	CommandEmpty,
@@ -14,7 +10,7 @@ import {
 	CommandInput,
 	CommandItem,
 	CommandList,
-} from "@/components/ui/command";
+} from "@/components/command";
 import { Tag, Check, Plus } from "lucide-react";
 
 interface TagSelectorProps {

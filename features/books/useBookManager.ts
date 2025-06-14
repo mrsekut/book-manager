@@ -6,7 +6,7 @@ import {
 	activeTabAtom,
 	newBookTitleAtom,
 	highPriorityBooksAtom,
-} from "@/atoms/bookAtoms";
+} from "@/features/books/bookAtoms";
 import {
 	addBookToList,
 	deleteBookFromList,

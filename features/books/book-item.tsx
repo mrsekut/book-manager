@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent } from "react";
 import type { Book } from "@/features/books/types";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/button";
 import { ChevronRight, ChevronDown, Trash, Star, StarOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 

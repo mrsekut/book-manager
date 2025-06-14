@@ -2,9 +2,9 @@
 
 import { useBookManager } from "@/features/books/useBookManager";
 import BookItem from "@/features/books/book-item";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/input";
+import { Button } from "@/components/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
 
 export default function BookManager() {
 	const {
