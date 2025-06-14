@@ -15,7 +15,7 @@ import {
 	toggleExpandState,
 } from "@/features/books/bookLogic";
 import { useEffect, useState, useCallback } from "react";
-import { db } from "@/lib/database";
+import * as bookActions from "@/app/actions/books";
 
 export function useBookManager() {
 	const [books, setBooks] = useAtom(booksAtom);
@@ -33,7 +33,7 @@ export function useBookManager() {
 			const fetchedBooks = await db.getAllBooks();
 			setBooks(fetchedBooks);
 		} catch (error) {
-			console.error('Failed to load books:', error);
+			console.error("Failed to load books:", error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -48,7 +48,7 @@ export function useBookManager() {
 		try {
 			await db.updateAllBooks(updatedBooks);
 		} catch (error) {
-			console.error('Failed to save books:', error);
+			console.error("Failed to save books:", error);
 		}
 	}, []);
 
@@ -60,7 +60,7 @@ export function useBookManager() {
 
 		try {
 			const { id, ...bookWithoutId } = {
-				id: '', // Temporary ID, will be replaced by Supabase
+				id: "", // Temporary ID, will be replaced by Supabase
 				title: newBookTitle.trim(),
 				priority: "高" as const,
 				nextBooks: [],
@@ -68,7 +68,7 @@ export function useBookManager() {
 			};
 
 			// Create book in database
-			const createdBook = await db.createBook(bookWithoutId);
+			const createdBook = await bookActions.createBook(bookWithoutId);
 			if (createdBook) {
 				// Add the created book with the real ID to the list
 				setBooks([...books, createdBook]);
@@ -76,15 +76,19 @@ export function useBookManager() {
 				setSelectedBookId(createdBook.id);
 			}
 		} catch (error) {
-			console.error('Failed to create book:', error);
-			alert(`本の作成に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			console.error("Failed to create book:", error);
+			alert(
+				`本の作成に失敗しました: ${
+					error instanceof Error ? error.message : "Unknown error"
+				}`
+			);
 		}
 	};
 
 	// 本を削除
 	const deleteBook = async (id: string) => {
 		try {
-			const success = await db.deleteBook(id);
+			const success = await bookActions.deleteBook(id);
 			if (success) {
 				const updatedBooks = deleteBookFromList(books, id);
 				setBooks(updatedBooks);
@@ -93,7 +97,7 @@ export function useBookManager() {
 				}
 			}
 		} catch (error) {
-			console.error('Failed to delete book:', error);
+			console.error("Failed to delete book:", error);
 		}
 	};
 
@@ -153,30 +157,30 @@ export function useBookManager() {
 			book.id === id ? { ...book, notes } : book
 		);
 		setBooks(updatedBooks);
-		
+
 		try {
-			await db.updateBook(id, { notes });
+			await bookActions.updateBook(id, { notes });
 		} catch (error) {
-			console.error('Failed to update book notes:', error);
+			console.error("Failed to update book notes:", error);
 		}
 	};
 
 	// 本にリンクを追加
 	const addBookLink = async (id: string, link: string) => {
 		const updatedBooks = books.map((book) =>
-			book.id === id
-				? { ...book, links: [...(book.links || []), link] }
-				: book
+			book.id === id ? { ...book, links: [...(book.links || []), link] } : book
 		);
 		setBooks(updatedBooks);
 
 		try {
-			const book = books.find(b => b.id === id);
+			const book = books.find((b) => b.id === id);
 			if (book) {
-				await db.updateBook(id, { links: [...(book.links || []), link] });
+				await bookActions.updateBook(id, {
+					links: [...(book.links || []), link],
+				});
 			}
 		} catch (error) {
-			console.error('Failed to add book link:', error);
+			console.error("Failed to add book link:", error);
 		}
 	};
 
@@ -193,13 +197,14 @@ export function useBookManager() {
 		setBooks(updatedBooks);
 
 		try {
-			const book = books.find(b => b.id === id);
+			const book = books.find((b) => b.id === id);
 			if (book) {
-				const newLinks = book.links?.filter((_, index) => index !== linkIndex) || [];
-				await db.updateBook(id, { links: newLinks });
+				const newLinks =
+					book.links?.filter((_, index) => index !== linkIndex) || [];
+				await bookActions.updateBook(id, { links: newLinks });
 			}
 		} catch (error) {
-			console.error('Failed to remove book link:', error);
+			console.error("Failed to remove book link:", error);
 		}
 	};
 
