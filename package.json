@@ -20,7 +20,6 @@
 		"jotai": "^2.12.5",
 		"lucide-react": "^0.515.0",
 		"next": "15.2.4",
-		"next-auth": "^4.24.11",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"tailwind-merge": "^3.3.1"
