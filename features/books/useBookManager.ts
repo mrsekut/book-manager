@@ -54,21 +54,30 @@ export function useBookManager() {
 
 	// 本を追加
 	const addBook = async () => {
-		const result = addBookToList(books, newBookTitle);
-		if (result.newBookId) {
-			const newBook = result.books.find(book => book.id === result.newBookId);
-			if (newBook) {
-				try {
-					const createdBook = await db.createBook(newBook);
-					if (createdBook) {
-						setBooks(result.books);
-						setNewBookTitle("");
-						setSelectedBookId(result.newBookId);
-					}
-				} catch (error) {
-					console.error('Failed to create book:', error);
-				}
+		if (newBookTitle.trim() === "") {
+			return;
+		}
+
+		try {
+			const { id, ...bookWithoutId } = {
+				id: '', // Temporary ID, will be replaced by Supabase
+				title: newBookTitle.trim(),
+				priority: "高" as const,
+				nextBooks: [],
+				level: 0,
+			};
+
+			// Create book in database
+			const createdBook = await db.createBook(bookWithoutId);
+			if (createdBook) {
+				// Add the created book with the real ID to the list
+				setBooks([...books, createdBook]);
+				setNewBookTitle("");
+				setSelectedBookId(createdBook.id);
 			}
+		} catch (error) {
+			console.error('Failed to create book:', error);
+			alert(`本の作成に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
 	};
 
