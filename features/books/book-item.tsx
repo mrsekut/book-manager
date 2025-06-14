@@ -1,7 +1,7 @@
 "use client";
 
 import type { KeyboardEvent } from "react";
-import type { Book } from "@/lib/types";
+import type { Book } from "@/features/books/types";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronDown, Trash, Star, StarOff } from "lucide-react";
 import { cn } from "@/lib/utils";

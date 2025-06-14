@@ -1,4 +1,4 @@
-import BookManager from "@/components/book-manager";
+import BookManager from "@/features/books/book-manager";
 
 export default function Home() {
 	return (
