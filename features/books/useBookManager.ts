@@ -105,6 +105,37 @@ export function useBookManager() {
 		setSelectedBookId(id === selectedBookId ? null : id);
 	};
 
+	// 本のメモを更新
+	const updateBookNotes = (id: string, notes: string) => {
+		const updatedBooks = books.map((book) =>
+			book.id === id ? { ...book, notes } : book
+		);
+		setBooks(updatedBooks);
+	};
+
+	// 本にリンクを追加
+	const addBookLink = (id: string, link: string) => {
+		const updatedBooks = books.map((book) =>
+			book.id === id
+				? { ...book, links: [...(book.links || []), link] }
+				: book
+		);
+		setBooks(updatedBooks);
+	};
+
+	// 本のリンクを削除
+	const removeBookLink = (id: string, linkIndex: number) => {
+		const updatedBooks = books.map((book) =>
+			book.id === id
+				? {
+						...book,
+						links: book.links?.filter((_, index) => index !== linkIndex) || [],
+				  }
+				: book
+		);
+		setBooks(updatedBooks);
+	};
+
 	return {
 		books,
 		setBooks,
@@ -123,5 +154,8 @@ export function useBookManager() {
 		handleKeyDown,
 		handleSelectBook,
 		highPriorityBooks,
+		updateBookNotes,
+		addBookLink,
+		removeBookLink,
 	};
 }

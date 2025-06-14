@@ -15,7 +15,6 @@ export default function BookManager() {
 		toggleExpand,
 		togglePriority,
 		deleteBook,
-		setNextBook,
 		handleKeyDown,
 		selectedBookId,
 		handleSelectBook,
@@ -23,6 +22,9 @@ export default function BookManager() {
 		setActiveTab,
 		addBook,
 		highPriorityBooks,
+		updateBookNotes,
+		addBookLink,
+		removeBookLink,
 	} = useBookManager();
 
 	return (
@@ -61,12 +63,13 @@ export default function BookManager() {
 							<BookItem
 								key={book.id}
 								book={book}
-								books={books}
 								expandedBooks={expandedBooks}
 								toggleExpand={toggleExpand}
 								togglePriority={togglePriority}
 								deleteBook={deleteBook}
-								setNextBook={setNextBook}
+								updateBookNotes={updateBookNotes}
+								addBookLink={addBookLink}
+								removeBookLink={removeBookLink}
 								onKeyDown={(e) => handleKeyDown(e, book.id)}
 								isSelected={selectedBookId === book.id}
 								onSelect={() => handleSelectBook(book.id)}
@@ -83,12 +86,13 @@ export default function BookManager() {
 							<BookItem
 								key={book.id}
 								book={book}
-								books={books}
 								expandedBooks={expandedBooks}
 								toggleExpand={toggleExpand}
 								togglePriority={togglePriority}
 								deleteBook={deleteBook}
-								setNextBook={setNextBook}
+								updateBookNotes={updateBookNotes}
+								addBookLink={addBookLink}
+								removeBookLink={removeBookLink}
 								onKeyDown={(e) => handleKeyDown(e, book.id)}
 								isSelected={selectedBookId === book.id}
 								onSelect={() => handleSelectBook(book.id)}

@@ -3,16 +3,28 @@
 import type { KeyboardEvent } from "react";
 import type { Book } from "@/features/books/types";
 import { Button } from "@/components/button";
-import { ChevronRight, ChevronDown, Trash, Star, StarOff } from "lucide-react";
+import { Textarea } from "@/components/textarea";
+import { Input } from "@/components/input";
+import {
+	ChevronRight,
+	ChevronDown,
+	Trash,
+	Star,
+	StarOff,
+	Plus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 type Props = {
 	book: Book;
-	books: Book[];
 	expandedBooks: Record<string, boolean>;
 	toggleExpand: (id: string) => void;
 	togglePriority: (id: string) => void;
 	deleteBook: (id: string) => void;
+	updateBookNotes: (id: string, notes: string) => void;
+	addBookLink: (id: string, link: string) => void;
+	removeBookLink: (id: string, linkIndex: number) => void;
 	onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
 	isSelected: boolean;
 	onSelect: () => void;
@@ -20,20 +32,18 @@ type Props = {
 
 export default function BookItem({
 	book,
-	books,
 	expandedBooks,
 	toggleExpand,
 	togglePriority,
 	deleteBook,
+	updateBookNotes,
+	addBookLink,
+	removeBookLink,
 	onKeyDown,
 	isSelected,
 	onSelect,
 }: Props) {
-	// この本の次に読む本のリスト
-	const nextBooks = books.filter((b) => book.nextBooks.includes(b.id));
-
-	// この本を次に読む本として設定している本のリスト
-	const parentBooks = books.filter((b) => b.nextBooks.includes(book.id));
+	const [newLink, setNewLink] = useState("");
 
 	// ネストレベルが1以上の場合は優先順位ボタンを無効化
 	const canTogglePriority = book.level === 0;
@@ -93,24 +103,22 @@ export default function BookItem({
 				</div>
 
 				<div className="flex items-center space-x-1">
-					{(nextBooks.length > 0 || parentBooks.length > 0) && (
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-8 w-8 p-0"
-							onClick={(e) => {
-								e.stopPropagation();
-								toggleExpand(book.id);
-							}}
-						>
-							{expandedBooks[book.id] ? (
-								<ChevronDown className="h-4 w-4" />
-							) : (
-								<ChevronRight className="h-4 w-4" />
-							)}
-							<span className="sr-only">展開</span>
-						</Button>
-					)}
+					<Button
+						variant="ghost"
+						size="sm"
+						className="h-8 w-8 p-0"
+						onClick={(e) => {
+							e.stopPropagation();
+							toggleExpand(book.id);
+						}}
+					>
+						{expandedBooks[book.id] ? (
+							<ChevronDown className="h-4 w-4" />
+						) : (
+							<ChevronRight className="h-4 w-4" />
+						)}
+						<span className="sr-only">展開</span>
+					</Button>
 
 					<Button
 						variant="ghost"
@@ -128,39 +136,73 @@ export default function BookItem({
 			</div>
 
 			{expandedBooks[book.id] && (
-				<div
-					className="mt-2 pl-4 border-l-2 border-dashed border-muted-foreground/30"
-					onClick={(e) => e.stopPropagation()}
-				>
-					{nextBooks.length > 0 && (
-						<div className="mb-2">
-							<h4 className="text-sm font-medium text-muted-foreground">
-								次に読む本:
-							</h4>
-							<ul className="pl-4 space-y-1">
-								{nextBooks.map((nextBook) => (
-									<li key={nextBook.id} className="text-sm">
-										{nextBook.title}
-									</li>
-								))}
-							</ul>
-						</div>
-					)}
+				<div className="mt-3 space-y-3" onClick={(e) => e.stopPropagation()}>
+					<div>
+						<label className="text-sm font-medium text-muted-foreground">
+							メモ
+						</label>
+						<Textarea
+							value={book.notes || ""}
+							onChange={(e) => updateBookNotes(book.id, e.target.value)}
+							placeholder="この本に関するメモを入力..."
+							className="mt-1 resize-none"
+							rows={3}
+						/>
+					</div>
 
-					{parentBooks.length > 0 && (
-						<div>
-							<h4 className="text-sm font-medium text-muted-foreground">
-								この本の前に読む本:
-							</h4>
-							<ul className="pl-4 space-y-1">
-								{parentBooks.map((parentBook) => (
-									<li key={parentBook.id} className="text-sm">
-										{parentBook.title}
-									</li>
-								))}
-							</ul>
+					<div>
+						<label className="text-sm font-medium text-muted-foreground">
+							関連リンク
+						</label>
+						<div className="mt-1 space-y-2">
+							{book.links?.map((link, index) => (
+								<div key={index} className="flex items-center gap-2">
+									<a
+										href={link}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-sm text-blue-600 hover:underline flex-1 truncate"
+									>
+										{link}
+									</a>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+										onClick={() => removeBookLink(book.id, index)}
+									>
+										<Trash className="h-3 w-3" />
+									</Button>
+								</div>
+							))}
+							<div className="flex gap-2">
+								<Input
+									value={newLink}
+									onChange={(e) => setNewLink(e.target.value)}
+									placeholder="https://..."
+									onKeyPress={(e) => {
+										if (e.key === "Enter" && newLink.trim()) {
+											addBookLink(book.id, newLink.trim());
+											setNewLink("");
+										}
+									}}
+								/>
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-9 w-9 p-0"
+									onClick={() => {
+										if (newLink.trim()) {
+											addBookLink(book.id, newLink.trim());
+											setNewLink("");
+										}
+									}}
+								>
+									<Plus className="h-4 w-4" />
+								</Button>
+							</div>
 						</div>
-					)}
+					</div>
 				</div>
 			)}
 		</div>
