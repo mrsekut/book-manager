@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, type Database } from "./supabase";
 import type { Book } from "@/features/books/types";
 
 export class DatabaseService {
@@ -91,7 +91,9 @@ export class DatabaseService {
 		return data.map(this.mapDbBookToBook);
 	}
 
-	private mapDbBookToBook(dbBook: any): Book {
+	private mapDbBookToBook(
+		dbBook: Database["public"]["Tables"]["books"]["Row"]
+	): Book {
 		return {
 			id: dbBook.id,
 			title: dbBook.title,
@@ -103,9 +105,11 @@ export class DatabaseService {
 		};
 	}
 
-	private mapBookToDbBook(book: Partial<Book>): any {
+	private mapBookToDbBook(
+		book: Partial<Book>
+	): Partial<Database["public"]["Tables"]["books"]["Insert"]> {
 		// Don't include id when creating new books (let Supabase generate UUID)
-		const dbBook: any = {};
+		const dbBook: Partial<Database["public"]["Tables"]["books"]["Insert"]> = {};
 
 		if (book.title !== undefined) dbBook.title = book.title;
 		if (book.priority !== undefined) dbBook.priority = book.priority;
