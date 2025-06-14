@@ -11,7 +11,6 @@ import {
 	addBookToList,
 	deleteBookFromList,
 	toggleBookPriority,
-	setNextBookRelation,
 	moveBookWithKeyboard,
 	toggleExpandState,
 } from "@/features/books/bookLogic";
@@ -61,12 +60,6 @@ export function useBookManager() {
 	// 優先順位を変更
 	const togglePriority = (id: string) => {
 		const updatedBooks = toggleBookPriority(books, id);
-		setBooks(updatedBooks);
-	};
-
-	// 次に読む本を設定
-	const setNextBook = (bookId: string, nextBookId: string) => {
-		const updatedBooks = setNextBookRelation(books, bookId, nextBookId);
 		setBooks(updatedBooks);
 	};
 
@@ -126,7 +119,6 @@ export function useBookManager() {
 		addBook,
 		deleteBook,
 		togglePriority,
-		setNextBook,
 		toggleExpand,
 		handleKeyDown,
 		handleSelectBook,

@@ -57,29 +57,8 @@ export function toggleBookPriority(books: Book[], id: string): Book[] {
 	});
 }
 
-// 次に読む本を設定するロジック
-export function setNextBookRelation(
-	books: Book[],
-	bookId: string,
-	nextBookId: string
-): Book[] {
-	return books.map((book) =>
-		book.id === bookId
-			? {
-					...book,
-					nextBooks: book.nextBooks.includes(nextBookId)
-						? book.nextBooks.filter((id) => id !== nextBookId)
-						: [...book.nextBooks, nextBookId],
-			  }
-			: book
-	);
-}
-
 // 同じレベルの前の本を見つける
-export function findPreviousSiblingIndex(
-	books: Book[],
-	currentIndex: number
-): number {
+function findPreviousSiblingIndex(books: Book[], currentIndex: number): number {
 	const currentLevel = books[currentIndex].level;
 	for (let i = currentIndex - 1; i >= 0; i--) {
 		if (books[i].level === currentLevel) {
@@ -90,10 +69,7 @@ export function findPreviousSiblingIndex(
 }
 
 // 同じレベルの次の本を見つける
-export function findNextSiblingIndex(
-	books: Book[],
-	currentIndex: number
-): number {
+function findNextSiblingIndex(books: Book[], currentIndex: number): number {
 	const currentLevel = books[currentIndex].level;
 	for (let i = currentIndex + 1; i < books.length; i++) {
 		if (books[i].level === currentLevel) {
@@ -104,10 +80,7 @@ export function findNextSiblingIndex(
 }
 
 // 本とその子孫をすべて取得する
-export function getBookAndDescendants(
-	books: Book[],
-	startIndex: number
-): number[] {
+function getBookAndDescendants(books: Book[], startIndex: number): number[] {
 	const result: number[] = [startIndex];
 	const startBook = books[startIndex];
 	const startLevel = startBook.level;

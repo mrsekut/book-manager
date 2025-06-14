@@ -6,18 +6,17 @@ import { Button } from "@/components/button";
 import { ChevronRight, ChevronDown, Trash, Star, StarOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface BookItemProps {
+type Props = {
 	book: Book;
 	books: Book[];
 	expandedBooks: Record<string, boolean>;
 	toggleExpand: (id: string) => void;
 	togglePriority: (id: string) => void;
 	deleteBook: (id: string) => void;
-	setNextBook: (bookId: string, nextBookId: string) => void;
 	onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
 	isSelected: boolean;
 	onSelect: () => void;
-}
+};
 
 export default function BookItem({
 	book,
@@ -26,11 +25,10 @@ export default function BookItem({
 	toggleExpand,
 	togglePriority,
 	deleteBook,
-	setNextBook,
 	onKeyDown,
 	isSelected,
 	onSelect,
-}: BookItemProps) {
+}: Props) {
 	// この本の次に読む本のリスト
 	const nextBooks = books.filter((b) => book.nextBooks.includes(b.id));
 
